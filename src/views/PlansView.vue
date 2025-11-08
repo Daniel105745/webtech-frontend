@@ -4,7 +4,17 @@
       <i class="bi bi-journal-text text-warning me-2"></i>Deine Trainingspläne
     </h2>
 
-    <div class="row g-4">
+    <div v-if="loading" class="text-center mt-5">
+      <div class="spinner-border text-warning" role="status">
+        <span class="visually-hidden">Lädt...</span>
+      </div>
+    </div>
+
+    <div v-else-if="error" class="alert alert-danger mt-4">
+      {{ error }}
+    </div>
+
+    <div v-else class="row g-4">
       <div v-for="plan in plans" :key="plan.id" class="col-md-4">
         <PlanCard :plan="plan" />
       </div>
@@ -13,38 +23,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import PlanCard from '@/components/PlanCard.vue'
 
-const plans = ref([
-  {
-    id: 1,
-    name: 'Muskelaufbau',
-    description: '3er Split mit Fokus auf Masseaufbau',
-    duration: '8 Wochen',
-    frequency: '3 Workouts pro Woche',
-    intensity: 'Mittel bis Hoch',
-    targets: 'Brust, Rücken, Beine'
-  },
-  {
-    id: 2,
-    name: 'Krafttraining',
-    description: 'Volumenplan für maximale Stärke',
-    duration: '10 Wochen',
-    frequency: '4 Workouts pro Woche',
-    intensity: 'Hoch',
-    targets: 'Ganzkörper'
-  },
-  {
-    id: 3,
-    name: 'Cardio & Core',
-    description: 'Ausdauer & Bauchtraining kombiniert',
-    duration: '6 Wochen',
-    frequency: '3 Sessions pro Woche',
-    intensity: 'Mittel',
-    targets: 'Bauch, Beine, Herz-Kreislauf'
+const plans = ref([])
+const loading = ref(true)
+const error = ref(null)
+const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+
+onMounted(async () => {
+  try {
+    const res = await fetch(`${baseUrl}/plans`)
+    if (!res.ok) throw new Error(`HTTP-Fehler: ${res.status}`)
+    plans.value = await res.json()
+  } catch (err) {
+    error.value = 'Fehler beim Laden der Trainingspläne.'
+    console.error('Backend-Fehler:', err)
+  } finally {
+    loading.value = false
   }
-])
+})
 </script>
 
 <style scoped>
