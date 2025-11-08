@@ -33,7 +33,7 @@ const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
 
 onMounted(async () => {
   try {
-    const res = await fetch(`${baseUrl}/plans`)
+    const res = await fetch(`${baseUrl}`)
     if (!res.ok) throw new Error(`HTTP-Fehler: ${res.status}`)
     plans.value = await res.json()
   } catch (err) {
