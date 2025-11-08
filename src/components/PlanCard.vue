@@ -6,16 +6,14 @@
   >
     <div class="card-body">
       <h5 class="card-title fw-bold mb-1">{{ plan.name }}</h5>
-      <p class="card-text text-secondary mb-3">{{ plan.description }}</p>
 
       <transition name="fade">
         <div v-if="expanded">
           <hr class="border-secondary" />
           <ul class="list-unstyled mb-3">
-            <li><i class="bi bi-clock text-success me-2"></i>Dauer: {{ plan.duration }}</li>
-            <li><i class="bi bi-calendar-week text-info me-2"></i>{{ plan.frequency }}</li>
-            <li><i class="bi bi-lightning-charge text-warning me-2"></i>Intensität: {{ plan.intensity }}</li>
-            <li><i class="bi bi-bar-chart text-danger me-2"></i>Zielmuskeln: {{ plan.targets }}</li>
+            <li><i class="bi bi-clock text-success me-2"></i>Dauer: {{ plan.dauer }}</li>
+            <li><i class="bi bi-lightning-charge text-warning me-2"></i>Intensität: {{ plan.intensitaet }}</li>
+            <li><i class="bi bi-bar-chart text-danger me-2"></i>Zielmuskeln: {{ plan.zielmuskeln }}</li>
           </ul>
           <button class="btn btn-success w-100 mt-2">Plan öffnen</button>
         </div>
@@ -56,4 +54,3 @@ const toggle = () => (expanded.value = !expanded.value)
   opacity: 0;
 }
 </style>
-np
