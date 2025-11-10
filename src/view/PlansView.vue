@@ -1,57 +1,181 @@
 <template>
-  <div class="container py-4 text-light">
-    <h2 class="mb-4">
-      <i class="bi bi-journal-text text-warning me-2"></i>Deine Trainingspläne
-    </h2>
-
-    <div v-if="loading" class="text-center mt-5">
-      <div class="spinner-border text-warning" role="status">
-        <span class="visually-hidden">Lädt...</span>
+  <div class="min-h-screen bg-graybg text-dark px-10 py-8">
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-10">
+      <div>
+        <h1 class="text-3xl font-bold mb-1">Trainingspläne</h1>
+        <p class="text-gray-500 text-sm">
+          Erstelle, bearbeite und verwalte deine Trainingspläne.
+        </p>
       </div>
-    </div>
 
-    <div v-else-if="error" class="alert alert-danger mt-4">
-      {{ error }}
-    </div>
+      <button @click="createPlan" class="btn btn-primary">
+        + Neuer Plan
+      </button>
+    </header>
 
-    <div v-else class="row g-4">
-      <div v-for="plan in plans" :key="plan.id" class="col-md-4">
-        <PlanCard :plan="plan" />
+    <!-- Grid -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        v-for="plan in plans"
+        :key="plan.id"
+        @click="goToDetail(plan.id)"
+        class="card p-6 flex flex-col justify-between cursor-pointer transition-all hover:-translate-y-1 active:scale-[0.98]"
+      >
+        <div>
+          <h2 class="text-xl font-semibold mb-1 hover:text-primary transition">
+            {{ plan.name }}
+          </h2>
+          <p class="text-gray-500 text-sm mb-4">{{ plan.zielmuskeln }}</p>
+
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-gray-600">Dauer</span>
+            <span class="font-medium">{{ plan.dauer }}</span>
+          </div>
+
+          <div class="flex justify-between text-sm mb-4">
+            <span class="text-gray-600">Intensität</span>
+            <span class="font-medium text-primary">{{ plan.intensitaet }}</span>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div
+          class="border-t border-gray-border mt-3 pt-3 flex justify-between items-center"
+          @click.stop
+        >
+          <button
+            @click="editPlan(plan)"
+            class="flex items-center gap-1 text-sm text-primary bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-all active:scale-95"
+          >
+            <i class="bi bi-pencil"></i>
+            Bearbeiten
+          </button>
+
+          <button
+            @click="deletePlan(plan.id)"
+            class="flex items-center gap-1 text-sm text-danger bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-md transition-all active:scale-95"
+          >
+            <i class="bi bi-trash"></i>
+            Löschen
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Edit-Modal -->
+    <div
+      v-if="editingPlan"
+      class="modal-overlay"
+    >
+      <div class="modal w-full max-w-md mx-4">
+        <h2 class="text-xl font-semibold mb-4">Plan bearbeiten</h2>
+
+        <div class="space-y-3">
+          <input
+            v-model="editingPlan.name"
+            placeholder="Name"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
+          />
+          <input
+            v-model="editingPlan.dauer"
+            placeholder="Dauer"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
+          />
+          <input
+            v-model="editingPlan.intensitaet"
+            placeholder="Intensität"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
+          />
+          <input
+            v-model="editingPlan.zielmuskeln"
+            placeholder="Zielmuskeln"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none"
+          />
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button
+            @click="editingPlan = null"
+            class="btn btn-outline"
+          >
+            Abbrechen
+          </button>
+          <button
+            @click="saveEdit"
+            class="btn btn-primary"
+          >
+            Speichern
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import PlanCard from '@/components/PlanCard.vue'
+import { useRouter } from 'vue-router'
 
-const plans = ref([])
-const loading = ref(true)
-const error = ref(null)
-const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+const plans = ref<any[]>([])
+const router = useRouter()
+const editingPlan = ref<any>(null)
 
-onMounted(async () => {
-  try {
-    const res = await fetch(`${baseUrl}/plans`)
-    if (!res.ok) throw new Error(`HTTP-Fehler: ${res.status}`)
-    plans.value = await res.json()
-  } catch (err) {
-    error.value = 'Fehler beim Laden der Trainingspläne.'
-    console.error('Backend-Fehler:', err)
-  } finally {
-    loading.value = false
+const API_BASE =
+  import.meta.env.MODE === 'development'
+    ? 'http://localhost:8080'
+    : 'https://webtech-backend.onrender.com'
+
+onMounted(loadPlans)
+
+async function loadPlans() {
+  const res = await fetch(`${API_BASE}/plans`)
+  plans.value = await res.json()
+}
+
+async function createPlan() {
+  const newPlan = {
+    name: 'Neuer Trainingsplan',
+    dauer: '4 Wochen',
+    intensitaet: 'Anfänger',
+    zielmuskeln: 'Ganzkörper',
   }
-})
+  await fetch(`${API_BASE}/plans`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newPlan),
+  })
+  loadPlans()
+}
+
+async function deletePlan(id: number) {
+  if (!confirm('Diesen Plan wirklich löschen?')) return
+  await fetch(`${API_BASE}/plans/${id}`, { method: 'DELETE' })
+  loadPlans()
+}
+
+function goToDetail(id: number) {
+  router.push(`/plans/${id}`)
+}
+
+function editPlan(plan: any) {
+  editingPlan.value = { ...plan }
+}
+
+async function saveEdit() {
+  if (!editingPlan.value) return
+  await fetch(`${API_BASE}/plans/${editingPlan.value.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(editingPlan.value),
+  })
+  editingPlan.value = null
+  loadPlans()
+}
 </script>
 
 <style scoped>
-.plan-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  border-radius: 1rem;
-}
-.plan-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 0 20px rgba(0, 255, 100, 0.2);
+.fade-in {
+  animation: fadeIn 0.25s ease-out;
 }
 </style>

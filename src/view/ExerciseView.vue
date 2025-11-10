@@ -1,28 +1,41 @@
 <template>
-  <div class="container py-4 text-light">
-    <h2 class="mb-4">💪 Übungen</h2>
+  <div class="p-8">
+    <h2 class="text-2xl font-semibold mb-6">Übungen</h2>
 
-    <div class="row g-4">
-      <div v-for="exercise in exercises" :key="exercise.id" class="col-md-4">
-        <div class="card bg-dark text-light shadow-sm h-100">
-          <div class="card-body">
-            <h5 class="card-title">{{ exercise.name }}</h5>
-            <p class="card-text">{{ exercise.muscle }}</p>
-            <button class="btn btn-outline-light w-100">Details</button>
-          </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div
+        v-for="ex in exercises"
+        :key="ex.id"
+        class="bg-white rounded-2xl shadow p-5 hover:shadow-lg transition"
+      >
+        <h3 class="text-lg font-bold">{{ ex.name }}</h3>
+        <p class="text-gray-500">{{ ex.muscle }}</p>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
 
-const exercises = ref([
-  { id: 1, name: 'Bankdrücken', muscle: 'Brust' },
-  { id: 2, name: 'Kniebeugen', muscle: 'Beine' },
-  { id: 3, name: 'Klimmzüge', muscle: 'Rücken' },
-  { id: 4, name: 'Plank', muscle: 'Bauch' }
-])
+interface Exercise {
+  id: number
+  name: string
+  muscle: string
+}
+
+const exercises = ref<Exercise[]>([])
+
+onMounted(async () => {
+  try {
+    const res = await fetch('https://api.dein-backend.de/exercises')
+    exercises.value = await res.json()
+  } catch {
+    exercises.value = [
+      { id: 1, name: 'Kniebeugen', muscle: 'Beine' },
+      { id: 2, name: 'Bankdrücken', muscle: 'Brust' },
+      { id: 3, name: 'Klimmzüge', muscle: 'Rücken' },
+    ]
+  }
+})
 </script>

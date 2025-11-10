@@ -1,156 +1,153 @@
 <template>
-  <div class="container py-5">
-    <div class="text-center mb-5">
-      <h1 class="fw-bold">🏋️‍♂️ Fitness Dashboard</h1>
-      <p class="text-secondary">Behalte deine Workouts, Pläne und Fortschritte im Blick</p>
+  <div class="flex flex-col h-[calc(100vh-80px)] overflow-y-auto px-10 py-6 bg-gray-50 text-gray-900">
+    <!-- Header -->
+    <div>
+      <h1 class="text-3xl font-bold mb-2">Willkommen zurück, Athlet 💪</h1>
+      <p class="text-gray-500 mb-8">Dein Trainingsfortschritt im Überblick.</p>
+
+      <!-- Stat Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-white rounded-2xl p-6 shadow border border-gray-200">
+          <p class="text-gray-500 text-base">Kalorienverbrauch</p>
+          <p class="text-3xl font-bold text-gray-800 mt-2">2.380 kcal</p>
+          <p class="text-sm text-green-600 mt-1">+8 % mehr als letzte Woche</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow border border-gray-200">
+          <p class="text-gray-500 text-base">Workouts diese Woche</p>
+          <p class="text-3xl font-bold text-gray-800 mt-2">5</p>
+          <p class="text-sm text-blue-600 mt-1">Ziel erreicht: 71 %</p>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow border border-gray-200">
+          <p class="text-gray-500 text-base">Trainingszeit</p>
+          <p class="text-3xl font-bold text-gray-800 mt-2">165 Min</p>
+          <p class="text-sm text-purple-600 mt-1">+12 % zur Vorwoche</p>
+        </div>
+      </div>
     </div>
 
-    <div class="row g-4">
-      <div class="col-md-4">
-        <router-link to="/workouts" class="text-decoration-none">
-          <div class="card bg-dark text-light shadow-lg border-0 h-100 text-center p-4 hover-card">
-            <i class="bi bi-activity display-4 text-primary mb-3"></i>
-            <h4 class="fw-semibold mb-2">Workouts</h4>
-            <p class="text-secondary">Verfolge deine Trainings und Leistungen.</p>
-          </div>
-        </router-link>
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
+      <!-- Line Chart -->
+      <div class="xl:col-span-2 bg-white rounded-2xl shadow border border-gray-200 p-6 h-96">
+        <h2 class="text-lg font-semibold mb-3">Trainingszeit (Minuten pro Tag)</h2>
+        <div class="h-[calc(100%-2rem)]">
+          <Line :data="lineData" :options="lineOptions" />
+        </div>
       </div>
 
-      <div class="col-md-4">
-        <router-link to="/plans" class="text-decoration-none">
-          <div
-            class="card bg-dark text-light shadow-lg border-0 h-100 text-center p-4 hover-card"
-          >
-            <i class="bi bi-calendar-check display-4 text-success mb-3"></i>
-            <h4 class="fw-semibold mb-2">Trainingspläne</h4>
-            <p class="text-secondary">Organisiere deine Ziele und Wochenpläne.</p>
-          </div>
-        </router-link>
+      <!-- Doughnut Chart -->
+      <div class="bg-white rounded-2xl shadow border border-gray-200 p-6 flex flex-col justify-center items-center h-96">
+        <h2 class="text-lg font-semibold mb-4 self-start">Trainingsverteilung</h2>
+        <div class="w-60 h-60">
+          <Doughnut :data="pieData" :options="pieOptions" />
+        </div>
       </div>
-
-
-      <div class="col-md-4">
-        <router-link to="/exercises" class="text-decoration-none">
-          <div
-            class="card bg-dark text-light shadow-lg border-0 h-100 text-center p-4 hover-card"
-          >
-            <i class="bi bi-bar-chart-line display-4 text-danger mb-3"></i>
-            <h4 class="fw-semibold mb-2">Übungen</h4>
-            <p class="text-secondary">Durchsuche und verwalte deine Übungen.</p>
-          </div>
-        </router-link>
-      </div>
-
     </div>
-  </div>
-  <div class="mt-5">
-    <h4 class="text-white mb-4">Tagesübersicht</h4>
-    <div class="row text-center">
-      <div class="col-md-3">
-        <div class="card bg-dark text-white border-0 p-3">
-          <i class="bi bi-fire fs-2 text-danger"></i>
-          <h5 class="mt-2">Kalorien</h5>
-          <p class="mb-0 fw-semibold">580 kcal</p>
-        </div>
+
+    <!-- Streak -->
+    <div class="bg-white rounded-2xl shadow border border-gray-200 p-6">
+      <h2 class="text-lg font-semibold mb-3">Aktivitäts-Streak 🔥</h2>
+      <p class="text-gray-600 text-sm mb-2">
+        Du bist seit <span class="font-semibold text-blue-600">5 Tagen</span> in Folge aktiv!
+      </p>
+      <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+        <div
+          class="bg-blue-600 h-3 rounded-full transition-all duration-500"
+          :style="{ width: '71%' }"
+        ></div>
       </div>
-      <div class="col-md-3">
-        <div class="card bg-dark text-white border-0 p-3">
-          <i class="bi bi-clock-history fs-2 text-info"></i>
-          <h5 class="mt-2">Trainingszeit</h5>
-          <p class="mb-0 fw-semibold">1h 15min</p>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card bg-dark text-white border-0 p-3">
-          <i class="bi bi-graph-up fs-2 text-success"></i>
-          <h5 class="mt-2">Fortschritt</h5>
-          <p class="mb-0 fw-semibold">+8%</p>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card bg-dark text-white border-0 p-3">
-          <i class="bi bi-calendar-event fs-2 text-warning"></i>
-          <h5 class="mt-2">Aktive Tage</h5>
-          <p class="mb-0 fw-semibold">4/7</p>
-        </div>
-      </div>
+      <p class="text-gray-500 text-xs mt-2">Ziel: 7 Tage in Folge</p>
     </div>
   </div>
-  <div class="mt-5">
-    <h4 class="text-white mb-4">Wochenkalender</h4>
-    <div class="table-responsive">
-      <table class="table table-dark table-borderless align-middle text-center">
-        <thead>
-        <tr class="text-uppercase text-muted small">
-          <th>Montag</th>
-          <th>Dienstag</th>
-          <th>Mittwoch</th>
-          <th>Donnerstag</th>
-          <th>Freitag</th>
-          <th>Samstag</th>
-          <th>Sonntag</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td>
-            <i class="bi bi-lightning-charge text-warning fs-4"></i><br>
-            <span>Oberkörper</span>
-          </td>
-          <td>
-            <i class="bi bi-bicycle text-info fs-4"></i><br>
-            <span>Cardio</span>
-          </td>
-          <td>
-            <i class="bi bi-barbell text-danger fs-4"></i><br>
-            <span>Beine</span>
-          </td>
-          <td>
-            <i class="bi bi-person-hearts text-success fs-4"></i><br>
-            <span>Core</span>
-          </td>
-          <td>
-            <i class="bi bi-activity text-primary fs-4"></i><br>
-            <span>Ganzkörper</span>
-          </td>
-          <td>
-            <i class="bi bi-tree text-success fs-4"></i><br>
-            <span>Stretching</span>
-          </td>
-          <td>
-            <i class="bi bi-cup-hot text-muted fs-4"></i><br>
-            <span>Ruhetag</span>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
 </template>
 
 <script setup lang="ts">
-// keine spezielle Logik nötig für die Startseite
+import { Line, Doughnut } from 'vue-chartjs'
+import {
+  Chart,
+  LineElement,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Filler,
+  Legend,
+  Title,
+} from 'chart.js'
+
+Chart.register(LineElement, ArcElement, CategoryScale, LinearScale, PointElement, Tooltip, Filler, Legend, Title)
+
+// --- Daten: Linienchart ---
+const lineData = {
+  labels: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
+  datasets: [
+    {
+      label: 'Trainingszeit (Minuten)',
+      data: [40, 55, 45, 30, 65, 70, 50],
+      fill: true,
+      borderColor: '#2563eb',
+      backgroundColor: 'rgba(37, 99, 235, 0.2)',
+      tension: 0.4,
+      pointBackgroundColor: '#2563eb',
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    },
+  ],
+}
+
+const lineOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      backgroundColor: '#1e293b',
+      titleColor: '#fff',
+      bodyColor: '#fff',
+      displayColors: false,
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: { color: '#64748b' },
+    },
+    y: {
+      grid: { color: '#e2e8f0' },
+      ticks: { color: '#64748b', stepSize: 10 },
+    },
+  },
+}
+
+// --- Daten: Kreisdiagramm ---
+const pieData = {
+  labels: ['Krafttraining', 'Cardio', 'Mobility'],
+  datasets: [
+    {
+      label: 'Trainingsverteilung',
+      data: [55, 30, 15],
+      backgroundColor: ['#2563eb', '#22c55e', '#facc15'],
+      borderWidth: 0,
+    },
+  ],
+}
+
+const pieOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: { color: '#334155', boxWidth: 12 },
+    },
+    tooltip: {
+      backgroundColor: '#1e293b',
+      titleColor: '#fff',
+      bodyColor: '#fff',
+    },
+  },
+}
 </script>
-
-<style scoped>
-.hover-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.hover-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-}
-table.table-dark td {
-  background-color: #1e1e1e;
-  border-radius: 10px;
-  vertical-align: middle;
-  height: 110px;
-  transition: transform 0.2s ease;
-}
-table.table-dark td:hover {
-  transform: scale(1.05);
-  background-color: #292929;
-}
-
-</style>
