@@ -123,7 +123,7 @@ const editingPlan = ref<Plan | null>(null);
 const API_BASE =
   import.meta.env.MODE === "development"
     ? "http://localhost:8080"
-    : "https://webtech-backend.onrender.com";
+    : "https://webtech-backend-rqq7.onrender.com";
 
 onMounted(loadPlans);
 

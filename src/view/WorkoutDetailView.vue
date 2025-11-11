@@ -94,9 +94,9 @@ interface Exercise {
 }
 
 const API_BASE =
-  import.meta.env.MODE === 'development'
-    ? 'http://localhost:8080'
-    : 'https://webtech-backend.onrender.com'
+  import.meta.env.MODE === "development"
+    ? "http://localhost:8080"
+    : "https://webtech-backend-rqq7.onrender.com";
 
 const route = useRoute()
 const router = useRouter()
