@@ -122,27 +122,51 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-  plan: Object,
-  workouts: Array,
-  loading: Boolean
-})
-defineEmits(['add-workout', 'edit-workout', 'delete-workout', 'back'])
+import { computed } from 'vue'
+
+interface Exercise {
+  id?: number
+  name: string
+  saetze?: number
+  wiederholungen?: number
+  gewicht?: number
+}
+
+interface Workout {
+  id?: number
+  name?: string
+  muskelgruppe?: string
+  dayOfWeek?: string
+  exercises?: Exercise[]
+}
+
+interface Plan {
+  id?: number
+  name?: string
+  dauer?: string
+  intensitaet?: string
+  zielmuskeln?: string
+}
+
+const props = defineProps<{
+  plan?: Plan
+  workouts: Workout[]
+  loading: boolean
+}>()
+
+const plan = computed(() => props.plan)
+const workouts = computed(() => props.workouts)
+const loading = computed(() => props.loading)
+
+defineEmits<{
+  (e: 'add-workout'): void
+  (e: 'edit-workout', w: Workout): void
+  // allow handlers that return Promise<void> as well
+  (e: 'delete-workout', id?: number): unknown
+  (e: 'back'): void
+}>()
 </script>
 
 <style scoped>
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.25s ease-out;
-}
+/* Keine lokale Animation notwendig — visuelle Effekte über Tailwind/Utilities möglich */
 </style>

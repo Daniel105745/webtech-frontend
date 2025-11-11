@@ -6,14 +6,13 @@
     @add-exercise="openAddModal"
     @edit-exercise="editExercise"
     @delete-exercise="deleteExercise"
-    @back="router.back()"
+    @back="router.back"
   />
 
   <!-- Modal -->
   <div
     v-if="editingExercise"
     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-    @keydown.esc="closeModal"
   >
     <div
       class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 animate-fadeIn"
@@ -75,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watchEffect } from 'vue'
+import { ref, onMounted, watchEffect, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import WorkoutDetail from '@/components/WorkoutDetail.vue'
 
@@ -122,10 +121,31 @@ watchEffect(() => {
   }
 })
 
+// Globaler Keydown-Handler, registriert wenn Modal offen ist
+function onGlobalKey(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    closeModal()
+  }
+}
+
+watch(editingExercise, (val) => {
+  if (val) window.addEventListener('keydown', onGlobalKey)
+  else window.removeEventListener('keydown', onGlobalKey)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onGlobalKey)
+})
+
 async function loadWorkout() {
   try {
-    const res = await fetch(`${API_BASE}/workouts/${route.params.id}`)
-    if (!res.ok) throw new Error('Fehler beim Laden des Workouts')
+    const id = Number(route.params.id)
+    if (Number.isNaN(id)) return
+    const res = await fetch(`${API_BASE}/workouts/${id}`)
+    if (!res.ok) {
+      console.error('Fehler beim Laden des Workouts', res.status)
+      return
+    }
     workout.value = await res.json()
   } catch (err) {
     console.error(err)
@@ -136,8 +156,13 @@ async function loadWorkout() {
 async function loadExercises() {
   loading.value = true
   try {
-    const res = await fetch(`${API_BASE}/exercises/workout/${route.params.id}`)
-    if (!res.ok) throw new Error('Fehler beim Laden der Übungen')
+    const id = Number(route.params.id)
+    if (Number.isNaN(id)) return
+    const res = await fetch(`${API_BASE}/exercises/workout/${id}`)
+    if (!res.ok) {
+      console.error('Fehler beim Laden der Übungen', res.status)
+      return
+    }
     exercises.value = await res.json()
   } catch (err) {
     console.error(err)
@@ -147,17 +172,18 @@ async function loadExercises() {
 }
 
 function openAddModal() {
+  const id = Number(route.params.id)
   editingExercise.value = {
     name: '',
     reps: 8,
     sets: 3,
-    workoutId: Number(route.params.id)
+    workoutId: Number.isNaN(id) ? undefined : id
   }
 }
 
-function editExercise(e: Record<string, any>) {
+function editExercise(e: Exercise) {
   // clone to avoid mutating list directly
-  editingExercise.value = { ...(e as Exercise) }
+  editingExercise.value = { ...e }
 }
 
 function closeModal() {
@@ -178,7 +204,14 @@ async function saveExercise() {
   const method = exercise.id ? 'PUT' : 'POST'
   const url = exercise.id
     ? `${API_BASE}/exercises/${exercise.id}`
-    : `${API_BASE}/exercises/workout/${exercise.workoutId}`
+    : (typeof exercise.workoutId !== 'number' || Number.isNaN(exercise.workoutId))
+      ? null
+      : `${API_BASE}/exercises/workout/${exercise.workoutId}`
+
+  if (!url) {
+    alert('Ungültige Zuordnung: workoutId fehlt. Bitte öffne das Formular vom Workout-Detail aus.')
+    return
+  }
 
   try {
     const res = await fetch(url, {
@@ -190,7 +223,11 @@ async function saveExercise() {
         sets: Number(exercise.sets)
       })
     })
-    if (!res.ok) throw new Error('Fehler beim Speichern')
+    if (!res.ok) {
+      console.error('Fehler beim Speichern', res.status)
+      alert('Fehler beim Speichern')
+      return
+    }
     editingExercise.value = null
     await loadExercises()
   } catch (err) {
@@ -203,7 +240,11 @@ async function deleteExercise(id: number) {
   if (!confirm('Übung wirklich löschen?')) return
   try {
     const res = await fetch(`${API_BASE}/exercises/${id}`, { method: 'DELETE' })
-    if (!res.ok) throw new Error('Fehler beim Löschen')
+    if (!res.ok) {
+      console.error('Fehler beim Löschen', res.status)
+      alert('Fehler beim Löschen')
+      return
+    }
     await loadExercises()
   } catch (err) {
     console.error(err)

@@ -5,8 +5,8 @@
     :loading="loading"
     @add-workout="openAddModal"
     @edit-workout="editWorkout"
-    @delete-workout="deleteWorkout"
-    @back="router.push('/plans')"
+    @delete-workout="(id) => deleteWorkout(id)"
+    @back="goBack"
   />
 
   <!-- Workout Modal -->
@@ -62,6 +62,31 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PlanDetail from '@/components/PlanDetail.vue'
 
+interface Exercise {
+  id?: number
+  name: string
+  reps?: number
+  sets?: number
+  workoutId?: number
+}
+
+interface Workout {
+  id?: number
+  name?: string
+  dayOfWeek?: string
+  muskelgruppe?: string
+  trainingPlanId?: number
+  exercises?: Exercise[]
+}
+
+interface Plan extends Record<string, unknown> {
+  id?: number
+  name?: string
+  dauer?: string
+  intensitaet?: string
+  zielmuskeln?: string
+}
+
 const API_BASE =
   import.meta.env.MODE === 'development'
     ? 'http://localhost:8080'
@@ -70,10 +95,10 @@ const API_BASE =
 const route = useRoute()
 const router = useRouter()
 
-const plan = ref<any>(null)
-const workouts = ref<any[]>([])
+const plan = ref<Plan | undefined>(undefined)
+const workouts = ref<Workout[]>([])
 const loading = ref(true)
-const editingWorkout = ref<any>(null)
+const editingWorkout = ref<Workout | null>(null)
 
 onMounted(() => {
   loadPlan()
@@ -82,10 +107,17 @@ onMounted(() => {
 
 async function loadPlan() {
   try {
+    const id = Number(route.params.id)
+    if (Number.isNaN(id)) return
+
     const res = await fetch(`${API_BASE}/plans`)
-    if (!res.ok) throw new Error('Fehler beim Laden der Pläne')
-    const allPlans = await res.json()
-    plan.value = allPlans.find((p: any) => p.id === Number(route.params.id))
+    if (!res.ok) {
+      console.error('Fehler beim Laden der Pläne', res.status)
+      return
+    }
+
+    const allPlans: Plan[] = await res.json()
+    plan.value = allPlans.find((p: Plan) => p.id === id) || undefined
   } catch (err) {
     console.error(err)
   }
@@ -94,20 +126,29 @@ async function loadPlan() {
 async function loadWorkouts() {
   loading.value = true
   try {
-    const res = await fetch(`${API_BASE}/workouts/plan/${route.params.id}`)
-    if (!res.ok) throw new Error('Fehler beim Laden der Workouts')
-    const baseWorkouts = await res.json()
+    const planId = Number(route.params.id)
+    if (Number.isNaN(planId)) return
 
-    // 🔥 Für jedes Workout gleich die Übungen holen
-    const workoutsWithExercises = await Promise.all(
-      baseWorkouts.map(async (w) => {
-        const exRes = await fetch(`${API_BASE}/exercises/workout/${w.id}`)
-        const exercises = exRes.ok ? await exRes.json() : []
+    const res = await fetch(`${API_BASE}/workouts/plan/${planId}`)
+    if (!res.ok) {
+      console.error('Fehler beim Laden der Workouts', res.status)
+      return
+    }
+
+    const baseWorkouts: Workout[] = await res.json()
+
+    // Direkt zu workouts.value zuweisen und vorher ID prüfen
+    workouts.value = await Promise.all(
+      baseWorkouts.map(async (w: Workout) => {
+        const wid = Number(w.id)
+        if (Number.isNaN(wid)) {
+          return { ...w, exercises: [] }
+        }
+        const exRes = await fetch(`${API_BASE}/exercises/workout/${wid}`)
+        const exercises: Exercise[] = exRes.ok ? await exRes.json() : []
         return { ...w, exercises }
       })
     )
-
-    workouts.value = workoutsWithExercises
   } catch (err) {
     console.error(err)
   } finally {
@@ -116,19 +157,21 @@ async function loadWorkouts() {
 }
 
 function openAddModal() {
+  const id = Number(route.params.id)
   editingWorkout.value = {
     name: '',
     dayOfWeek: '',
     muskelgruppe: '',
-    trainingPlanId: Number(route.params.id)
+    trainingPlanId: Number.isNaN(id) ? undefined : id
   }
 }
 
-function editWorkout(w: any) {
+function editWorkout(w: Workout) {
   editingWorkout.value = { ...w }
 }
 
 async function saveWorkout() {
+  if (!editingWorkout.value) return
   const workout = editingWorkout.value
   const method = workout.id ? 'PUT' : 'POST'
   const url = workout.id
@@ -152,12 +195,10 @@ async function saveWorkout() {
       return
     }
 
-    // 👇 Änderung hier
     const savedWorkout = await res.json()
     editingWorkout.value = null
     await loadWorkouts()
 
-    // Wenn es ein neues Workout war → direkt auf die Workout-Seite leiten
     if (method === 'POST') {
       router.push(`/workouts/${savedWorkout.id}`)
     }
@@ -166,11 +207,25 @@ async function saveWorkout() {
   }
 }
 
-
-async function deleteWorkout(id: number) {
+async function deleteWorkout(id?: number) {
+  if (typeof id !== 'number') return
   if (!confirm('Workout wirklich löschen?')) return
-  await fetch(`${API_BASE}/workouts/${id}`, { method: 'DELETE' })
-  loadWorkouts()
+  try {
+    const res = await fetch(`${API_BASE}/workouts/${id}`, { method: 'DELETE' })
+    if (!res.ok) {
+      console.error('Fehler beim Löschen', res.status)
+      alert('Fehler beim Löschen')
+      return
+    }
+    await loadWorkouts()
+  } catch (err) {
+    console.error(err)
+    alert('Fehler beim Löschen')
+  }
+}
+
+function goBack() {
+  router.push('/plans')
 }
 </script>
 

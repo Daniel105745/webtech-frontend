@@ -9,9 +9,7 @@
         </p>
       </div>
 
-      <button @click="createPlan" class="btn btn-primary">
-        + Neuer Plan
-      </button>
+      <button @click="createPlan" class="btn btn-primary">+ Neuer Plan</button>
     </header>
 
     <!-- Grid -->
@@ -64,12 +62,11 @@
     </section>
 
     <!-- Edit-Modal -->
-    <div
-      v-if="editingPlan"
-      class="modal-overlay"
-    >
+    <div v-if="editingPlan" class="modal-overlay">
       <div class="modal w-full max-w-md mx-4">
-        <h2 class="text-xl font-semibold mb-4">Plan bearbeiten</h2>
+        <h2 class="text-xl font-semibold mb-4">
+          {{ editingPlan.id ? "Plan bearbeiten" : "Neuen Plan erstellen" }}
+        </h2>
 
         <div class="space-y-3">
           <input
@@ -95,17 +92,11 @@
         </div>
 
         <div class="flex justify-end gap-3 mt-6">
-          <button
-            @click="editingPlan = null"
-            class="btn btn-outline"
-          >
+          <button @click="editingPlan = null" class="btn btn-outline">
             Abbrechen
           </button>
-          <button
-            @click="saveEdit"
-            class="btn btn-primary"
-          >
-            Speichern
+          <button @click="saveEdit" class="btn btn-primary">
+            {{ editingPlan.id ? "Speichern" : "Erstellen" }}
           </button>
         </div>
       </div>
@@ -114,63 +105,75 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, type UnwrapRef } from "vue";
+import { useRouter } from "vue-router";
 
-const plans = ref<any[]>([])
-const router = useRouter()
-const editingPlan = ref<any>(null)
+interface Plan {
+  id?: number;
+  name: string;
+  dauer: string;
+  intensitaet: string;
+  zielmuskeln: string;
+}
+
+const plans = ref<Plan[]>([]);
+const router = useRouter();
+const editingPlan = ref<Plan | null>(null);
 
 const API_BASE =
-  import.meta.env.MODE === 'development'
-    ? 'http://localhost:8080'
-    : 'https://webtech-backend.onrender.com'
+  import.meta.env.MODE === "development"
+    ? "http://localhost:8080"
+    : "https://webtech-backend.onrender.com";
 
-onMounted(loadPlans)
+onMounted(loadPlans);
 
 async function loadPlans() {
-  const res = await fetch(`${API_BASE}/plans`)
-  plans.value = await res.json()
+  const res = await fetch(`${API_BASE}/plans`);
+  plans.value = await res.json();
 }
 
 async function createPlan() {
-  const newPlan = {
-    name: 'Neuer Trainingsplan',
-    dauer: '4 Wochen',
-    intensitaet: 'Anfänger',
-    zielmuskeln: 'Ganzkörper',
-  }
-  await fetch(`${API_BASE}/plans`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newPlan),
-  })
-  loadPlans()
+  // Öffne Modal mit leeren Feldern statt sofort zu erstellen
+  editingPlan.value = {
+    name: "",
+    dauer: "",
+    intensitaet: "",
+    zielmuskeln: "",
+  };
 }
 
-async function deletePlan(id: number) {
-  if (!confirm('Diesen Plan wirklich löschen?')) return
-  await fetch(`${API_BASE}/plans/${id}`, { method: 'DELETE' })
-  loadPlans()
+async function deletePlan(id: UnwrapRef<Plan["id"]> | undefined) {
+  if (!confirm("Diesen Plan wirklich löschen?")) return;
+  await fetch(`${API_BASE}/plans/${id}`, { method: "DELETE" });
+  loadPlans();
 }
 
-function goToDetail(id: number) {
-  router.push(`/plans/${id}`)
+function goToDetail(id: UnwrapRef<Plan["id"]> | undefined) {
+  router.push(`/plans/${id}`);
 }
 
-function editPlan(plan: any) {
-  editingPlan.value = { ...plan }
+function editPlan(plan: Plan) {
+  editingPlan.value = { ...plan };
 }
 
 async function saveEdit() {
-  if (!editingPlan.value) return
-  await fetch(`${API_BASE}/plans/${editingPlan.value.id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(editingPlan.value),
-  })
-  editingPlan.value = null
-  loadPlans()
+  if (!editingPlan.value) return;
+  // Wenn Objekt eine id hat -> update (PUT), sonst neu anlegen (POST)
+  if (editingPlan.value.id) {
+    await fetch(`${API_BASE}/plans/${editingPlan.value.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editingPlan.value),
+    });
+  } else {
+    await fetch(`${API_BASE}/plans`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(editingPlan.value),
+    });
+  }
+  editingPlan.value = null;
+  loadPlans();
 }
 </script>
 

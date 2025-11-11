@@ -78,6 +78,8 @@ import {
   Title,
 } from 'chart.js'
 
+import type { ChartOptions } from 'chart.js'
+
 Chart.register(LineElement, ArcElement, CategoryScale, LinearScale, PointElement, Tooltip, Filler, Legend, Title)
 
 // --- Daten: Linienchart ---
@@ -98,7 +100,7 @@ const lineData = {
   ],
 }
 
-const lineOptions = {
+const lineOptions: ChartOptions<'line'> = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -135,7 +137,7 @@ const pieData = {
   ],
 }
 
-const pieOptions = {
+const pieOptions: ChartOptions<'doughnut'> = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
