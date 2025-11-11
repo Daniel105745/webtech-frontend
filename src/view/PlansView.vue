@@ -132,7 +132,7 @@ async function loadPlans() {
   plans.value = await res.json();
 }
 
-async function createPlan() {
+function createPlan() {
   // Öffne Modal mit leeren Feldern statt sofort zu erstellen
   editingPlan.value = {
     name: "",
@@ -144,8 +144,18 @@ async function createPlan() {
 
 async function deletePlan(id: UnwrapRef<Plan["id"]> | undefined) {
   if (!confirm("Diesen Plan wirklich löschen?")) return;
-  await fetch(`${API_BASE}/plans/${id}`, { method: "DELETE" });
-  loadPlans();
+  try {
+    const res = await fetch(`${API_BASE}/plans/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const text = await res.text();
+      alert(`Fehler beim Löschen: ${res.status} - ${text}`);
+      return;
+    }
+    await loadPlans();
+  } catch (err) {
+    console.error(err);
+    alert('Fehler beim Löschen');
+  }
 }
 
 function goToDetail(id: UnwrapRef<Plan["id"]> | undefined) {
@@ -158,22 +168,45 @@ function editPlan(plan: Plan) {
 
 async function saveEdit() {
   if (!editingPlan.value) return;
-  // Wenn Objekt eine id hat -> update (PUT), sonst neu anlegen (POST)
-  if (editingPlan.value.id) {
-    await fetch(`${API_BASE}/plans/${editingPlan.value.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editingPlan.value),
-    });
-  } else {
-    await fetch(`${API_BASE}/plans`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editingPlan.value),
-    });
+
+  // Einfache Validierung
+  if (!editingPlan.value.name || editingPlan.value.name.trim().length === 0) {
+    alert('Bitte einen Namen für den Plan angeben.');
+    return;
   }
-  editingPlan.value = null;
-  loadPlans();
+
+  try {
+    // Wenn Objekt eine id hat -> update (PUT), sonst neu anlegen (POST)
+    if (editingPlan.value.id) {
+      const res = await fetch(`${API_BASE}/plans/${editingPlan.value.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingPlan.value),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        alert(`Fehler beim Speichern: ${res.status} - ${text}`);
+        return;
+      }
+    } else {
+      const res = await fetch(`${API_BASE}/plans`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingPlan.value),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        alert(`Fehler beim Erstellen: ${res.status} - ${text}`);
+        return;
+      }
+    }
+
+    editingPlan.value = null;
+    await loadPlans();
+  } catch (err) {
+    console.error('Fehler beim Speichern:', err);
+    alert('Fehler beim Speichern des Plans. Bitte Konsole überprüfen.');
+  }
 }
 </script>
 
