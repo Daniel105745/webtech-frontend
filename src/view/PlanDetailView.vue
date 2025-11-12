@@ -12,12 +12,12 @@
   <!-- Workout Modal -->
   <div
     v-if="editingWorkout"
-    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm"
   >
     <div
-      class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 animate-fadeIn border border-gray-200"
+      class="bg-[#202124] text-gray-200 rounded-2xl shadow-xl p-6 w-full max-w-md mx-4 animate-fadeIn border border-[#303134]"
     >
-      <h2 class="text-xl font-semibold mb-4 text-gray-900">
+      <h2 class="text-xl font-semibold mb-4 text-white">
         {{ editingWorkout.id ? 'Workout bearbeiten' : 'Workout hinzufügen' }}
       </h2>
 
@@ -25,30 +25,35 @@
         <input
           v-model="editingWorkout.name"
           placeholder="Workout-Name"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="w-full bg-[#1a1a1d] border border-[#3a3b3d] rounded-lg px-4 py-2 text-gray-100
+                 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
         />
         <input
           v-model="editingWorkout.dayOfWeek"
           placeholder="Tag der Woche"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="w-full bg-[#1a1a1d] border border-[#3a3b3d] rounded-lg px-4 py-2 text-gray-100
+                 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
         />
         <input
           v-model="editingWorkout.muskelgruppe"
           placeholder="Muskelgruppe"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          class="w-full bg-[#1a1a1d] border border-[#3a3b3d] rounded-lg px-4 py-2 text-gray-100
+                 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
         />
       </div>
 
       <div class="flex justify-end gap-3 mt-6">
         <button
           @click="editingWorkout = null"
-          class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition"
+          class="px-4 py-2 text-sm font-medium text-gray-200 bg-[#2a2b2e] hover:bg-[#3a3b3d]
+                 rounded-lg transition active:scale-95"
         >
           Abbrechen
         </button>
         <button
           @click="saveWorkout"
-          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition"
+          class="px-4 py-2 text-sm font-medium text-white bg-[#3b82f6] hover:bg-[#2563eb]
+                 rounded-lg shadow-md hover:shadow-lg transition active:scale-95"
         >
           Speichern
         </button>
@@ -69,7 +74,6 @@ interface Exercise {
   sets?: number
   workoutId?: number
 }
-
 interface Workout {
   id?: number
   name?: string
@@ -78,8 +82,7 @@ interface Workout {
   trainingPlanId?: number
   exercises?: Exercise[]
 }
-
-interface Plan extends Record<string, unknown> {
+interface Plan {
   id?: number
   name?: string
   dauer?: string
@@ -93,7 +96,6 @@ const API_BASE =
 
 const route = useRoute()
 const router = useRouter()
-
 const plan = ref<Plan | undefined>(undefined)
 const workouts = ref<Workout[]>([])
 const loading = ref(true)
@@ -108,51 +110,30 @@ async function loadPlan() {
   try {
     const id = Number(route.params.id)
     if (Number.isNaN(id)) return
-
     const res = await fetch(`${API_BASE}/plans`)
-    if (!res.ok) {
-      console.error('Fehler beim Laden der Pläne', res.status)
-      return
-    }
-
+    if (!res.ok) return
     const allPlans: Plan[] = await res.json()
     plan.value = allPlans.find((p: Plan) => p.id === id) || undefined
-  } catch (err) {
-    console.error(err)
-  }
+  } catch (err) { console.error(err) }
 }
 
 async function loadWorkouts() {
   loading.value = true
   try {
     const planId = Number(route.params.id)
-    if (Number.isNaN(planId)) return
-
     const res = await fetch(`${API_BASE}/workouts/plan/${planId}`)
-    if (!res.ok) {
-      console.error('Fehler beim Laden der Workouts', res.status)
-      return
-    }
-
+    if (!res.ok) return
     const baseWorkouts: Workout[] = await res.json()
-
-    // Direkt zu workouts.value zuweisen und vorher ID prüfen
     workouts.value = await Promise.all(
       baseWorkouts.map(async (w: Workout) => {
         const wid = Number(w.id)
-        if (Number.isNaN(wid)) {
-          return { ...w, exercises: [] }
-        }
+        if (Number.isNaN(wid)) return { ...w, exercises: [] }
         const exRes = await fetch(`${API_BASE}/exercises/workout/${wid}`)
         const exercises: Exercise[] = exRes.ok ? await exRes.json() : []
         return { ...w, exercises }
       })
     )
-  } catch (err) {
-    console.error(err)
-  } finally {
-    loading.value = false
-  }
+  } catch (err) { console.error(err) } finally { loading.value = false }
 }
 
 function openAddModal() {
@@ -164,11 +145,7 @@ function openAddModal() {
     trainingPlanId: Number.isNaN(id) ? undefined : id
   }
 }
-
-function editWorkout(w: Workout) {
-  editingWorkout.value = { ...w }
-}
-
+function editWorkout(w: Workout) { editingWorkout.value = { ...w } }
 async function saveWorkout() {
   if (!editingWorkout.value) return
   const workout = editingWorkout.value
@@ -187,59 +164,27 @@ async function saveWorkout() {
         dayOfWeek: workout.dayOfWeek
       })
     })
-
-    if (!res.ok) {
-      const msg = await res.text()
-      alert(`Fehler: ${res.status} – ${msg}`)
-      return
-    }
-
-    const savedWorkout = await res.json()
+    if (!res.ok) return alert(`Fehler: ${res.status}`)
     editingWorkout.value = null
     await loadWorkouts()
-
-    if (method === 'POST') {
-      router.push(`/workouts/${savedWorkout.id}`)
-    }
-  } catch (err) {
-    console.error('Fehler beim Speichern:', err)
-  }
+  } catch (err) { console.error('Fehler beim Speichern:', err) }
 }
 
 async function deleteWorkout(id?: number) {
-  if (typeof id !== 'number') return
-  if (!confirm('Workout wirklich löschen?')) return
+  if (!id || !confirm('Workout wirklich löschen?')) return
   try {
     const res = await fetch(`${API_BASE}/workouts/${id}`, { method: 'DELETE' })
-    if (!res.ok) {
-      console.error('Fehler beim Löschen', res.status)
-      alert('Fehler beim Löschen')
-      return
-    }
+    if (!res.ok) return alert('Fehler beim Löschen')
     await loadWorkouts()
-  } catch (err) {
-    console.error(err)
-    alert('Fehler beim Löschen')
-  }
+  } catch (err) { console.error(err) }
 }
-
-function goBack() {
-  router.push('/plans')
-}
+function goBack() { router.push('/plans') }
 </script>
 
 <style scoped>
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
 }
-.animate-fadeIn {
-  animation: fadeIn 0.25s ease-out;
-}
+.animate-fadeIn { animation: fadeIn 0.25s ease-out; }
 </style>

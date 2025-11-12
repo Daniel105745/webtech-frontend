@@ -1,5 +1,6 @@
 <template>
-  <div class="flex h-screen bg-gray-100 text-gray-900 overflow-hidden">
+
+  <div :class="[{ dark: isDark }, 'flex h-screen overflow-hidden']">
     <!-- Sidebar -->
     <aside
       class="w-64 bg-gray-900 text-white flex flex-col shadow-xl fixed h-full"
@@ -52,17 +53,28 @@
     </aside>
 
     <!-- Main Content -->
-    <div class="flex flex-col flex-1 ml-64 min-h-screen bg-gray-100 text-gray-900">
+    <div class="flex flex-col flex-1 ml-64 min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
       <!-- Navbar -->
       <header
-        class="flex items-center justify-between bg-white border-b border-gray-200 px-6 py-3 shadow-sm"
+        class="flex items-center justify-between bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 shadow-sm transition-colors"
       >
-        <h1 class="font-semibold text-lg text-gray-800"></h1>
+        <h1 class="font-semibold text-lg text-gray-800 dark:text-gray-100">
+
+        </h1>
 
         <div class="flex items-center gap-3">
+          <!-- Dark Mode Toggle -->
+          <button
+            @click="toggleTheme"
+            class="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md text-sm font-medium transition hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            <i :class="isDark ? 'bi bi-moon-stars-fill' : 'bi bi-brightness-high-fill'"></i>
+            {{ isDark ? 'Dark Mode' : 'Light Mode' }}
+          </button>
+
           <RouterLink
             to="/profile"
-            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md text-sm font-medium transition"
+            class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md text-sm font-medium transition"
           >
             Profil
           </RouterLink>
@@ -76,7 +88,7 @@
       </header>
 
       <!-- Main Dashboard Content -->
-      <main class="flex-1 p-8 overflow-y-auto">
+      <main class="flex-1 p-8 overflow-y-auto transition-colors">
         <div class="w-full max-w-7xl mx-auto">
           <RouterView />
         </div>
@@ -87,4 +99,16 @@
 
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import { ref, watchEffect } from 'vue'
+
+const isDark = ref(localStorage.getItem('theme') === 'dark')
+
+watchEffect(() => {
+  document.documentElement.classList.toggle('dark', isDark.value)
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+})
+
+function toggleTheme() {
+  isDark.value = !isDark.value
+}
 </script>
