@@ -1,12 +1,11 @@
 <template>
-  <div class="min-h-screen bg-[#0f172a] px-10 py-10 text-gray-200">
+
 
     <!-- Header -->
     <div class="flex items-center justify-between mb-10">
       <button
         @click="$emit('back')"
-        class="flex items-center gap-2 text-blue-400 hover:text-white bg-[#1e293b] hover:bg-[#334155]
-               px-4 py-2 rounded-lg transition active:scale-95 shadow-sm border border-[#334155]"
+        class="btn btn-outline"
       >
         <i class="bi bi-arrow-left"></i> Zurück
       </button>
@@ -18,10 +17,9 @@
 
       <button
         @click="$emit('add-workout')"
-        class="bg-[#3b82f6] hover:bg-[#2563eb] text-white font-medium px-5 py-2 rounded-lg
-               shadow-md hover:shadow-lg transition active:scale-95"
+        class="btn btn-primary"
       >
-        + Workout hinzufügen
+        + Übung hinzufügen
       </button>
     </div>
 
@@ -54,24 +52,29 @@
       </div>
 
       <!-- Workout Grid -->
-      <div v-else-if="workouts.length"
-           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        v-else-if="workouts.length"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start"
+      >
 
         <div
           v-for="workout in workouts"
           :key="workout.id"
           @click="$router.push(`/workouts/${workout.id}`)"
           class="bg-[#1e293b] border border-[#334155] rounded-xl p-6 shadow-md
-                 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer"
+         transition-all cursor-pointer
+         hover:shadow-xl hover:-translate-y-1 hover:bg-[#26334a]
+         active:scale-[0.98]"
         >
           <h3 class="text-lg font-semibold mb-1 text-white">{{ workout.name }}</h3>
           <p class="text-sm text-gray-400">{{ workout.muskelgruppe }}</p>
           <p class="text-xs text-gray-500 mt-1 italic">{{ workout.dayOfWeek }}</p>
 
           <!-- Exercises -->
-          <div v-if="workout.exercises?.length"
-               class="mt-4 border-t border-[#334155] pt-3">
-
+          <div
+            v-if="workout.exercises?.length"
+            class="mt-4 border-t border-[#334155] pt-3"
+          >
             <h4 class="font-medium text-gray-300 mb-2">Übungen:</h4>
 
             <ul class="text-sm text-gray-400 space-y-1">
@@ -91,27 +94,28 @@
           </div>
 
           <!-- Buttons -->
-          <div class="border-t border-[#334155] mt-4 pt-3 flex justify-between items-center"
-               @click.stop>
+          <div
+            class="border-t border-[#334155] mt-4 pt-3 flex justify-between items-center"
+            @click.stop
+          >
             <button
               @click="$emit('edit-workout', workout)"
-              class="flex items-center gap-2 text-sm font-medium text-white bg-[#3b82f6]
-                     hover:bg-[#2563eb] px-4 py-2 rounded-lg shadow-md hover:shadow-lg
-                     transition active:scale-95"
-            >
-              <i class="bi bi-pencil"></i> Bearbeiten
+              class="btn btn-primary flex items-center gap-2">
+              <i class="bi bi-pencil"></i>
+              Bearbeiten
             </button>
+
 
             <button
               @click="$emit('delete-workout', workout.id)"
-              class="flex items-center gap-2 text-sm font-medium text-white bg-[#ef4444]
-                     hover:bg-[#dc2626] px-4 py-2 rounded-lg shadow-md hover:shadow-lg
-                     transition active:scale-95"
+              class="btn btn-danger"
             >
-              <i class="bi bi-trash"></i> Löschen
+              <i class="bi bi-trash"></i>
+              Löschen
             </button>
           </div>
         </div>
+
       </div>
 
       <!-- Empty State -->
@@ -120,7 +124,6 @@
         Noch keine Workouts hinzugefügt
       </div>
     </section>
-  </div>
 </template>
 
 <script setup lang="ts">

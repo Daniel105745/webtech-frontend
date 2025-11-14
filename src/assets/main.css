@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   🌙 GLOBAL DARK THEME — EINZIGES DESIGN
+   🌙 GLOBAL DARK THEME — FIX, KEIN LIGHT MODE
 ============================================================ */
 
 :root {
@@ -14,10 +14,10 @@
     --warning: #facc15;
 
     --text: #f1f5f9;
-    --text-muted: #94a3b8;
+    --text-muted: #748eb1;
 
-    --bg: #0b1120;            /* globaler Seiten-Hintergrund */
-    --panel: #1e293b;         /* Karten + Modale */
+    --bg: #0d192b;
+    --panel: #1e2b3c;
     --panel-hover: #27364a;
     --border: #334155;
 
@@ -45,20 +45,19 @@ body,
     transition: var(--transition-smooth);
 }
 
-/* Standard Page Layout */
+/* ============================================================
+   🧱 PAGE
+============================================================ */
+
 .page {
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100vh - 80px);
-    overflow-y: auto;
+    flex: 1;
     padding: 2.5rem;
     background-color: var(--bg);
     color: var(--text);
 }
 
-
 /* ============================================================
-   🪟 PANELS (zentrale große Boxen)
+   🪟 PANELS
 ============================================================ */
 
 .panel {
@@ -72,7 +71,6 @@ body,
     padding: 2rem;
     transition: var(--transition-smooth);
 }
-
 
 /* ============================================================
    🪣 CARDS
@@ -91,7 +89,6 @@ body,
     border-color: #3b4b63;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
 }
-
 
 /* ============================================================
    🔘 BUTTONS
@@ -114,7 +111,6 @@ body,
     background-color: var(--primary);
     box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
 }
-
 .btn-primary:hover {
     background-color: var(--primary-hover);
     transform: scale(1.02);
@@ -122,9 +118,7 @@ body,
 
 .btn-danger {
     background-color: var(--danger);
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
 }
-
 .btn-danger:hover {
     background-color: #dc2626;
     transform: scale(1.02);
@@ -135,11 +129,9 @@ body,
     color: var(--text);
     background-color: var(--panel);
 }
-
 .btn-outline:hover {
     background-color: var(--panel-hover);
 }
-
 
 /* ============================================================
    🪟 MODALS
@@ -169,7 +161,6 @@ body,
     animation: fadeIn 0.25s ease-out;
 }
 
-/* Inputs inside modal */
 .modal input,
 .modal select {
     background-color: #0f172a;
@@ -178,7 +169,6 @@ body,
     padding: 0.6rem 1rem;
     border-radius: 0.6rem;
     width: 100%;
-    outline: none;
 }
 
 .modal input:focus,
@@ -187,27 +177,133 @@ body,
     box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
 }
 
-
 /* ============================================================
-   ✨ Scrollbar + Animation
+   ✨ SCROLLBAR
 ============================================================ */
 
 ::-webkit-scrollbar { width: 8px; }
-
 ::-webkit-scrollbar-thumb {
     background-color: var(--primary-light);
     border-radius: 10px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--primary);
 }
 
+/* ============================================================
+   🧱 SIDEBAR
+============================================================ */
+
+.sidebar {
+    width: 16rem;
+    background-color: #111827;
+    color: #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.sidebar-header {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #1f2937;
+    text-align: center;
+}
+
+.sidebar .title {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.nav-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.5rem;
+    opacity: 0.9;
+    transition: 0.2s;
+}
+
+.nav-item:hover {
+    background-color: #1f2937;
+    opacity: 1;
+}
+
+.nav-active {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid #1f2937;
+    font-size: 0.85rem;
+    text-align: center;
+    opacity: 0.6;
+}
+
+/* ============================================================
+   🧱 MAIN AREA
+============================================================ */
+
+.main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-left: 16rem;
+    min-height: 100vh;
+}
+
+/* ============================================================
+   🧱 NAVBAR
+============================================================ */
+
+.navbar {
+    background-color: #1e293b;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.nav-btn {
+    background-color: #334155;
+    color: #e5e7eb;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.5rem;
+    margin-right: 0.75rem;
+}
+.nav-btn:hover {
+    background-color: #475569;
+}
+
+.logout-btn {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.5rem;
+}
+.logout-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+/* ============================================================
+   ANIMATION
+============================================================ */
+
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.96); }
     to { opacity: 1; transform: scale(1); }
-}
-
-.animate-fadeIn {
-    animation: fadeIn 0.25s ease-out;
 }

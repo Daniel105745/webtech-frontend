@@ -83,11 +83,11 @@
         >
           <button
             @click="$emit('edit-exercise', exercise)"
-            class="btn btn-outline"
-          >
+            class="btn btn-primary flex items-center gap-2">
             <i class="bi bi-pencil"></i>
             Bearbeiten
           </button>
+
 
           <button
             @click="$emit('delete-exercise', exercise.id!)"

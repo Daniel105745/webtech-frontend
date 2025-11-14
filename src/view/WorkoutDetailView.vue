@@ -1,11 +1,7 @@
 <template>
 
   <!-- Einheitlicher Seiten-Wrapper -->
-  <div
-    class="flex flex-col h-[calc(100vh-80px)] overflow-y-auto px-10 py-6
-           bg-gray-50 text-gray-900 dark:bg-[#0f172a] dark:text-gray-100
-           transition-colors duration-300"
-  >
+
 
     <WorkoutDetail
       :workout="workout"
@@ -78,7 +74,7 @@
         </form>
       </div>
     </div>
-  </div>
+
 
 </template>
 
