@@ -20,7 +20,7 @@
           <i class="bi bi-fire"></i> Workouts
         </RouterLink>
 
-        <RouterLink to="/exercises" class="nav-item" active-class="nav-active">
+        <RouterLink to="/external-exercises" class="nav-item" active-class="nav-active">
           <i class="bi bi-bicycle"></i> Übungen
         </RouterLink>
       </nav>
