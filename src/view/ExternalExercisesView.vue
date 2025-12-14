@@ -8,7 +8,6 @@
     </div>
 
     <div class="flex items-center gap-3">
-      <!-- Suche -->
       <input
         v-model="query"
         @keyup.enter="search"
@@ -16,7 +15,6 @@
         class="border border-gray-border rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary outline-none"
       />
 
-      <!-- Muskelgruppen-Dropdown -->
       <div class="relative">
         <select
           v-model="selectedMuscle"
@@ -47,7 +45,6 @@
     </div>
   </header>
 
-  <!-- GRID -->
   <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
     <div
       v-for="ex in results"
@@ -68,10 +65,6 @@
           <span class="font-medium">{{ ex.type }}</span>
         </div>
 
-        <div class="flex justify-between text-sm mb-2">
-          <span class="text-gray-600">Equipment</span>
-          <span class="font-medium">{{ ex.equipment }}</span>
-        </div>
 
         <div class="flex justify-between text-sm">
           <span class="text-gray-600">Level</span>
@@ -84,6 +77,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useAuthenticatedFetch } from '@/api' // <--- IMPORT
 
 /* ---------- TYPES ---------- */
 interface ExternalExercise {
@@ -97,32 +91,21 @@ interface ExternalExercise {
 /* ---------- STATE ---------- */
 const query = ref('')
 const selectedMuscle = ref('')
-
-const results = ref<ExternalExercise[]>([])   // FIXED ✔
+const results = ref<ExternalExercise[]>([])
 
 const muscles: string[] = [
-  'abdominals',
-  'abductors',
-  'adductors',
-  'biceps',
-  'calves',
-  'chest',
-  'forearms',
-  'glutes',
-  'hamstrings',
-  'lats',
-  'lower_back',
-  'middle_back',
-  'neck',
-  'quadriceps',
-  'traps',
-  'triceps'
+  'abdominals', 'abductors', 'adductors', 'biceps', 'calves', 'chest',
+  'forearms', 'glutes', 'hamstrings', 'lats', 'lower_back', 'middle_back',
+  'neck', 'quadriceps', 'traps', 'triceps'
 ]
 
 const API_BASE =
   import.meta.env.MODE === 'development'
     ? 'http://localhost:8080'
     : 'https://webtech-backend-rqq7.onrender.com'
+
+// <--- AUTH FETCH
+const { authFetch } = useAuthenticatedFetch()
 
 /* ---------- SEARCH ---------- */
 async function search() {
@@ -131,7 +114,8 @@ async function search() {
   if (query.value.trim()) params.append('query', query.value.trim())
   if (selectedMuscle.value) params.append('muscle', selectedMuscle.value)
 
-  const res = await fetch(`${API_BASE}/external/exercises?${params}`)
+  // <--- authFetch
+  const res = await authFetch(`${API_BASE}/external/exercises?${params}`)
 
   if (!res.ok) {
     console.error('API-Fehler', res)
@@ -139,6 +123,6 @@ async function search() {
     return
   }
 
-  results.value = (await res.json()) as ExternalExercise[]  // FIXED ✔
+  results.value = (await res.json()) as ExternalExercise[]
 }
 </script>

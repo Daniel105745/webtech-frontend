@@ -5,6 +5,8 @@ import HomeView from '../view/HomeView.vue'
 import PlansView from '../view/PlansView.vue'
 import WorkoutsView from '../view/WorkoutsView.vue'
 import ExternalExercisesView from '../view/ExternalExercisesView.vue' // <-- neu
+import HistoryView from '@/view/HistoryView.vue'
+import { authGuard } from "@auth0/auth0-vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +21,12 @@ const router = createRouter({
       name: 'plan-detail',
       component: () => import('../view/PlanDetailView.vue'),
       props: true,
+    },
+    {
+      path: '/history',
+      name: 'history',
+      component: HistoryView,
+
     },
 
     // Workouts
@@ -35,8 +43,11 @@ const router = createRouter({
       path: '/external-exercises',
       name: 'external-exercises',
       component: ExternalExercisesView,
-    }
-  ],
+    },
+
+
+
+    ],
 })
 
 export default router

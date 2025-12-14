@@ -9,7 +9,6 @@
     @back="goBack"
   />
 
-  <!-- Workout Modal -->
   <div
     v-if="editingWorkout"
     class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm"
@@ -61,6 +60,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PlanDetail from '@/components/PlanDetail.vue'
+import { useAuthenticatedFetch } from '@/api' // <--- IMPORT
 
 interface Exercise {
   id?: number
@@ -97,6 +97,9 @@ const workouts = ref<Workout[]>([])
 const loading = ref(true)
 const editingWorkout = ref<Workout | null>(null)
 
+// <--- AUTH FETCH
+const { authFetch } = useAuthenticatedFetch()
+
 onMounted(() => {
   loadPlan()
   loadWorkouts()
@@ -104,25 +107,32 @@ onMounted(() => {
 
 async function loadPlan() {
   const id = Number(route.params.id)
-  const res = await fetch(`${API_BASE}/plans`)
-  const allPlans: Plan[] = await res.json()
-  plan.value = allPlans.find((p) => p.id === id)
+  // <--- authFetch
+  const res = await authFetch(`${API_BASE}/plans`)
+  if (res.ok) {
+    const allPlans: Plan[] = await res.json()
+    plan.value = allPlans.find((p) => p.id === id)
+  }
 }
 
 async function loadWorkouts() {
   loading.value = true
   const id = Number(route.params.id)
-  const res = await fetch(`${API_BASE}/workouts/plan/${id}`)
-  const workoutsRaw: Workout[] = await res.json()
 
-  workouts.value = await Promise.all(
-    workoutsRaw.map(async (w) => {
-      const r = await fetch(`${API_BASE}/exercises/workout/${w.id}`)
-      const exercises = r.ok ? await r.json() : []
-      return { ...w, exercises }
-    })
-  )
+  // <--- authFetch
+  const res = await authFetch(`${API_BASE}/workouts/plan/${id}`)
+  if (res.ok) {
+    const workoutsRaw: Workout[] = await res.json()
 
+    // Auch hier drin authFetch nutzen!
+    workouts.value = await Promise.all(
+      workoutsRaw.map(async (w) => {
+        const r = await authFetch(`${API_BASE}/exercises/workout/${w.id}`)
+        const exercises = r.ok ? await r.json() : []
+        return { ...w, exercises }
+      })
+    )
+  }
   loading.value = false
 }
 
@@ -153,9 +163,10 @@ async function saveWorkout() {
     ? `${API_BASE}/workouts/${w.id}`
     : `${API_BASE}/workouts/plan/${w.trainingPlanId}`
 
-  await fetch(url, {
+  // <--- authFetch
+  await authFetch(url, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    // Content-Type macht der Helper automatisch
     body: JSON.stringify({
       name: w.name,
       muskelgruppe: w.muskelgruppe,
@@ -169,7 +180,8 @@ async function saveWorkout() {
 
 async function deleteWorkout(id?: number) {
   if (!id) return
-  await fetch(`${API_BASE}/workouts/${id}`, { method: 'DELETE' })
+  // <--- authFetch
+  await authFetch(`${API_BASE}/workouts/${id}`, { method: 'DELETE' })
   loadWorkouts()
 }
 </script>
