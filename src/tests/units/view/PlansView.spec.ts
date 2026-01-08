@@ -1,7 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import PlansView from '@/view/PlansView.vue'
-
+//6
 // ---------- Mocks ----------
 const pushMock = vi.fn()
 vi.mock('vue-router', () => ({

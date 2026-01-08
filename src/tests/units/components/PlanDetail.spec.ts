@@ -2,6 +2,8 @@ import { mount } from '@vue/test-utils'
 import PlanDetail from '@/components/PlanDetail.vue'
 import router from '@/router'
 
+//2
+
 // 👉 Router wird gemockt, damit wir keine echte Navigation ausführen
 vi.mock('@/router', () => ({
     default: { push: vi.fn() }

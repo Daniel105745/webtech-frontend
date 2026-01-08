@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import LoginView from '@/view/LoginView.vue'
-
+// 5
 //  Mock Auth0
 const loginMock = vi.fn()
 vi.mock('@auth0/auth0-vue', () => ({

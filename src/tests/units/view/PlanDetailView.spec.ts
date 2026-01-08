@@ -39,13 +39,16 @@ function mockLoadPlanAndWorkouts({
         ok: true,
         json: async () => workouts
     })
+
+
     // loadExercises für jedes Workout
-    for (const w of workouts) {
+    for (let i = 0; i < workouts.length; i++) {
         authFetchMock.mockResolvedValueOnce({
             ok: true,
             json: async () => exercises
         })
     }
+
 }
 
 // -------------------- Test Suite --------------------

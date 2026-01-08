@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils'
 import WorkoutDetail from '@/components/WorkoutDetail.vue'
 
-// Beispiel-Daten
+
+//3
 const mockWorkout = {
     id: 1,
     name: 'Push Day',

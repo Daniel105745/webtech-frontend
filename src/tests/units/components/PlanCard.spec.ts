@@ -1,6 +1,8 @@
 import { mount } from '@vue/test-utils'
 import PlanCard from '@/components/PlanCard.vue'
 
+//1
+
 const mockPlan = {
     id: 1,
     name: 'Muskelaufbau',

@@ -1,7 +1,7 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import WorkoutView from '@/view/WorkoutsView.vue'
-
+//7
 // -------------------- Mocks --------------------
 
 // router

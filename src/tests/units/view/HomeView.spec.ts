@@ -1,6 +1,8 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import HomeView from '@/view/HomeView.vue'
 
+//4
+
 // 👉 Mock Chart-Komponenten nur für diesen Test
 vi.mock('vue-chartjs', () => ({
     Line: { template: '<div>LineChartMock</div>' },

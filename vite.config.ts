@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
-
+// nochmal push
 export default defineConfig(async ({ mode }) => {
   const isDev = mode === 'development' || process.env.NODE_ENV === 'development'
 
