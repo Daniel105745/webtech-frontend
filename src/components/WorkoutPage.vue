@@ -199,7 +199,11 @@ defineEmits(['back'])
 const API_BASE = import.meta.env.MODE === 'development' ? 'http://localhost:8080' : 'https://webtech-backend-rqq7.onrender.com'
 const loading = ref(true); const workout = ref<Workout | null>(null); const exercises = ref<Exercise[]>([])
 const sessionActive = ref(false); const sessionFinished = ref(false); const currentSessionId = ref<number | null>(null)
-const earnedCalories = ref(0); const timerSeconds = ref(0); let timerInterval: number | undefined
+
+// fix setTimerInterval
+const earnedCalories = ref(0); const timerSeconds = ref(0); let timerInterval: ReturnType<typeof setInterval> | null = null
+
+// const earnedCalories = ref(0); const timerSeconds = ref(0); let timerInterval: number | undefined
 const showFinishModal = ref(false); const inputCalories = ref<number | null>(null)
 const { authFetch } = useAuthenticatedFetch()
 
@@ -259,12 +263,28 @@ async function confirmStop() {
     })
     if (!res.ok) { alert('Fehler'); startTimer(); return }
     const result = await res.json()
-    earnedCalories.value = result.calories; showFinishModal.value = false; sessionActive.value = false; sessionFinished.value = true
+
+
+     earnedCalories.value = result.calories; showFinishModal.value = false; sessionActive.value = false; sessionFinished.value = true
   } catch (e) { console.error(e); alert('Fehler'); startTimer() }
 }
+// fix startTimer()
+function startTimer() {
+  stopTimer()
+  timerInterval = setInterval(() => timerSeconds.value++, 1000)
+}
+// function startTimer() { stopTimer(); timerInterval = setInterval(() => timerSeconds.value++, 1000) }
 
-function startTimer() { stopTimer(); timerInterval = setInterval(() => timerSeconds.value++, 1000) }
-function stopTimer() { clearInterval(timerInterval) }
+// fix stopTimer()
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval)
+    timerInterval = null
+  }
+}
+
+
+// function stopTimer() { clearInterval(timerInterval) }
 function formatTime(sec: number) { return `${Math.floor(sec / 60).toString().padStart(2, '0')}:${(sec % 60).toString().padStart(2, '0')}` }
 </script>
 

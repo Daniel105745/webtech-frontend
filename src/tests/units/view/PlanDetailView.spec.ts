@@ -1,3 +1,4 @@
+
 import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import PlanDetailView from '@/view/PlanDetailView.vue'
